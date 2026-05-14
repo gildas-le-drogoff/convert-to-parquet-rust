@@ -10,8 +10,6 @@ fn csv_temp(content: &str) -> NamedTempFile {
     f
 }
 
-// -> couvert par test_inference_float_vs_int dans schema_threshold_tests.rs
-
 #[test]
 fn test_mostly_positive_integer_column() {
     let mut content = String::from("a\n");
@@ -51,5 +49,3 @@ fn test_timestamp_with_microseconds() {
         DataType::Timestamp(_, _)
     ));
 }
-
-//  -> couvert par test_inference_timestamp_with_invalids_becomes_largeutf8 dans schema_threshold_tests.rs

@@ -11,7 +11,7 @@ BIN_NAME    := csv_to_parquet
 RELEASE_BIN := target/release/$(BIN_NAME)
 MAN_PAGE    := $(BIN_NAME).1
 
-.PHONY: all build release debug test check fmt lint clean install uninstall man demo help
+.PHONY: all build release debug test check fmt lint clean install uninstall man demo help doc
 
 all: release
 
@@ -24,11 +24,13 @@ help:
 	@echo "  check    cargo check (fast type-check)"
 	@echo "  fmt      format code (rustfmt)"
 	@echo "  lint     clippy lints"
+	@echo "  doc      build mdBook documentation (book/)"
 	@echo "  man      generate man page"
 	@echo "  demo     run demo script"
 	@echo "  install  install binary + man page to PREFIX (default /usr/local)"
 	@echo "  uninstall remove installed files"
 	@echo "  clean    remove build artifacts"
+	@echo "  help     this message"
 
 build: release
 
@@ -69,3 +71,9 @@ demo: release
 clean:
 	$(CARGO) clean
 	$(RM) $(MAN_PAGE)
+	$(RM) -r book/book
+
+doc:
+	cd book && mdbook build
+	@echo "Documentation built at book/book/"
+

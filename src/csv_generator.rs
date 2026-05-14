@@ -15,40 +15,40 @@ const OUTPUT_DIR: &str = "datasets_tests";
 fn main() {
     create_dir_all(OUTPUT_DIR).unwrap();
     let files = Arc::new(Mutex::new(Vec::<String>::new()));
-    generate_dataset("bruite_csv", ',', "csv", Mode::Bruite, &files);
-    generate_dataset("bruite_tsv", '\t', "tsv", Mode::Bruite, &files);
-    generate_dataset("parfait_csv", ',', "csv", Mode::Parfait, &files);
-    generate_dataset("parfait_tsv", '\t', "tsv", Mode::Parfait, &files);
+    generate_dataset("noisy_csv", ',', "csv", Mode::Noisy, &files);
+    generate_dataset("noisy_tsv", '\t', "tsv", Mode::Noisy, &files);
+    generate_dataset("clean_csv", ',', "csv", Mode::Clean, &files);
+    generate_dataset("clean_tsv", '\t', "tsv", Mode::Clean, &files);
     generate_dataset(
-        "cardinalite_faible",
+        "low_cardinality",
         ',',
         "csv",
-        Mode::CardinaliteFaible,
+        Mode::LowCardinality,
         &files,
     );
     generate_dataset(
-        "cardinalite_elevee",
+        "high_cardinality",
         ',',
         "csv",
-        Mode::CardinaliteElevee,
+        Mode::HighCardinality,
         &files,
     );
-    generate_dataset("colonnes_constantes", ',', "csv", Mode::Constantes, &files);
-    generate_dataset("colonnes_correlees", ',', "csv", Mode::Correlees, &files);
+    generate_dataset("constant_columns", ',', "csv", Mode::Constant, &files);
+    generate_dataset("correlated_columns", ',', "csv", Mode::Correlated, &files);
     generate_dataset("distribution_skew", ',', "csv", Mode::Skew, &files);
-    generate_dataset("distribution_uniforme", ',', "csv", Mode::Uniforme, &files);
+    generate_dataset("distribution_uniform", ',', "csv", Mode::Uniform, &files);
     display_files(&files);
 }
 #[derive(Clone, Copy)]
 enum Mode {
-    Bruite,
-    Parfait,
-    CardinaliteFaible,
-    CardinaliteElevee,
-    Constantes,
-    Correlees,
+    Noisy,
+    Clean,
+    LowCardinality,
+    HighCardinality,
+    Constant,
+    Correlated,
     Skew,
-    Uniforme,
+    Uniform,
 }
 fn generate_dataset(
     name: &str,
@@ -58,7 +58,7 @@ fn generate_dataset(
     files: &Arc<Mutex<Vec<String>>>,
 ) {
     let path = format!("{}/{}.{}", OUTPUT_DIR, name, extension);
-    println!("generation {}", path);
+    println!("generating {}", path);
     let file = File::create(&path).unwrap();
     let mut writer = BufWriter::with_capacity(64 * 1024 * 1024, file);
     write_header(&mut writer, delim);
@@ -75,7 +75,7 @@ fn generate_dataset(
 }
 fn display_files(files: &Arc<Mutex<Vec<String>>>) {
     println!();
-    println!("files generes :");
+    println!("generated files:");
     println!("------------------");
     let files = files.lock().unwrap();
     for f in files.iter() {
@@ -105,18 +105,18 @@ fn generate_row(index: usize, delim: char, mode: Mode) -> String {
 }
 fn generate_value(col: usize, index: usize, rng: &mut StdRng, mode: Mode) -> String {
     match mode {
-        Mode::Parfait => generate_clean(col, index, rng),
-        Mode::Bruite => generate_noisy(col, index, rng),
-        Mode::CardinaliteFaible => {
+        Mode::Clean => generate_clean(col, index, rng),
+        Mode::Noisy => generate_noisy(col, index, rng),
+        Mode::LowCardinality => {
             format!("VAL{}", index % 10)
         }
-        Mode::CardinaliteElevee => {
+        Mode::HighCardinality => {
             format!("VAL{}", index)
         }
-        Mode::Constantes => {
+        Mode::Constant => {
             format!("CONST{}", col)
         }
-        Mode::Correlees => {
+        Mode::Correlated => {
             format!("{}", index * col)
         }
         Mode::Skew => {
@@ -126,7 +126,7 @@ fn generate_value(col: usize, index: usize, rng: &mut StdRng, mode: Mode) -> Str
                 format!("B{}", index)
             }
         }
-        Mode::Uniforme => {
+        Mode::Uniform => {
             format!("{}", rng.random_range(0..1_000_000))
         }
     }

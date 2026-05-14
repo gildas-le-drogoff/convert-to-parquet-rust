@@ -1,23 +1,30 @@
 // ============================================================
 use arrow::record_batch::RecordBatch;
+use std::sync::atomic::AtomicUsize;
+
+const ERROR_SAMPLE_LIMIT: usize = 10;
+
 #[derive(Clone, Debug)]
 pub struct ErrorSample {
     pub values: Vec<String>,
-    pub limite: usize,
+    pub limit: usize,
 }
+
 impl ErrorSample {
-    pub fn new(limite: usize) -> Self {
+    pub fn new(limit: usize) -> Self {
         Self {
             values: Vec::new(),
-            limite,
+            limit,
         }
     }
+
     pub fn add(&mut self, value: String) {
-        if self.values.len() < self.limite {
+        if self.values.len() < self.limit {
             self.values.push(value);
         }
     }
 }
+
 #[derive(Clone, Debug)]
 pub struct ColumnMetrics {
     pub name: String,
@@ -25,8 +32,9 @@ pub struct ColumnMetrics {
     pub total_null_text: usize,
     pub total_conversion_errors: usize,
     pub total_valid_values: usize,
-    pub echantillon: ErrorSample,
+    pub error_samples: ErrorSample,
 }
+
 impl ColumnMetrics {
     pub fn new(name: &str) -> Self {
         Self {
@@ -35,23 +43,23 @@ impl ColumnMetrics {
             total_null_text: 0,
             total_conversion_errors: 0,
             total_valid_values: 0,
-            echantillon: ErrorSample::new(10),
+            error_samples: ErrorSample::new(ERROR_SAMPLE_LIMIT),
         }
     }
 }
+
 pub enum ConversionResult<T> {
-    Valide(T),
-    NullExplicite,
-    ErreurConversion(String),
+    Valid(T),
+    ExplicitNull,
+    ConversionError(String),
 }
+
 pub struct BlockResult {
     pub batch: RecordBatch,
     pub metrics: Vec<ColumnMetrics>,
 }
+
 #[derive(Default)]
 pub struct ErrorCounters {
-    pub parse_errors: std::sync::atomic::AtomicUsize,
-    pub erreurs_structure_csv: std::sync::atomic::AtomicUsize,
-    pub raw_read_errors: std::sync::atomic::AtomicUsize,
+    pub parse_errors: AtomicUsize,
 }
-// ============================================================

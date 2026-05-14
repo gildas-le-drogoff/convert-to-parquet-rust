@@ -1,287 +1,136 @@
 // ============================================================
+use super::conversions::{convert_to_bool, convert_to_timestamp};
 use super::types::{ColumnMetrics, ConversionResult};
 use crate::utils::is_null_text;
-use arrow::array::*;
-use arrow::datatypes::TimeUnit;
+use arrow::array::{
+    ArrayRef, BooleanBuilder, GenericBinaryBuilder, GenericStringBuilder, OffsetSizeTrait,
+    PrimitiveBuilder,
+};
+use arrow::datatypes::{
+    ArrowPrimitiveType, TimeUnit, TimestampMicrosecondType, TimestampMillisecondType,
+    TimestampNanosecondType, TimestampSecondType,
+};
 use std::sync::Arc;
-pub fn build_int64_column(
-    values: &[String],
+
+pub fn build_primitive_column<P: ArrowPrimitiveType>(
+    values: &[&str],
     metrics: &mut ColumnMetrics,
-    convertir: fn(&str) -> ConversionResult<i64>,
+    convert: impl Fn(&str) -> ConversionResult<P::Native>,
 ) -> ArrayRef {
-    let mut b = Int64Builder::new();
-    for v in values {
-        match convertir(v) {
-            ConversionResult::Valide(x) => {
-                b.append_value(x);
+    let mut builder = PrimitiveBuilder::<P>::new();
+    for value in values {
+        match convert(value) {
+            ConversionResult::Valid(x) => {
+                builder.append_value(x);
                 metrics.total_valid_values += 1;
             }
-            ConversionResult::NullExplicite => {
-                b.append_null();
+            ConversionResult::ExplicitNull => {
+                builder.append_null();
                 metrics.total_null_text += 1;
             }
-            ConversionResult::ErreurConversion(raw) => {
-                b.append_null();
+            ConversionResult::ConversionError(raw) => {
+                builder.append_null();
                 metrics.total_conversion_errors += 1;
-                metrics.echantillon.add(raw);
+                metrics.error_samples.add(raw);
             }
         }
     }
-    Arc::new(b.finish())
+    Arc::new(builder.finish())
 }
-pub fn build_uint64_column(
-    values: &[String],
-    metrics: &mut ColumnMetrics,
-    convertir: fn(&str) -> ConversionResult<u64>,
-) -> ArrayRef {
-    let mut b = UInt64Builder::new();
-    for v in values {
-        match convertir(v) {
-            ConversionResult::Valide(x) => {
-                b.append_value(x);
+
+pub fn build_bool_column(values: &[&str], metrics: &mut ColumnMetrics) -> ArrayRef {
+    let mut builder = BooleanBuilder::new();
+    for value in values {
+        match convert_to_bool(value) {
+            ConversionResult::Valid(x) => {
+                builder.append_value(x);
                 metrics.total_valid_values += 1;
             }
-            ConversionResult::NullExplicite => {
-                b.append_null();
+            ConversionResult::ExplicitNull => {
+                builder.append_null();
                 metrics.total_null_text += 1;
             }
-            ConversionResult::ErreurConversion(raw) => {
-                b.append_null();
+            ConversionResult::ConversionError(raw) => {
+                builder.append_null();
                 metrics.total_conversion_errors += 1;
-                metrics.echantillon.add(raw);
+                metrics.error_samples.add(raw);
             }
         }
     }
-    Arc::new(b.finish())
+    Arc::new(builder.finish())
 }
-pub fn build_bool_column(
-    values: &[String],
-    metrics: &mut ColumnMetrics,
-    convertir: fn(&str) -> ConversionResult<bool>,
-) -> ArrayRef {
-    let mut b = BooleanBuilder::new();
-    for v in values {
-        match convertir(v) {
-            ConversionResult::Valide(x) => {
-                b.append_value(x);
-                metrics.total_valid_values += 1;
-            }
-            ConversionResult::NullExplicite => {
-                b.append_null();
-                metrics.total_null_text += 1;
-            }
-            ConversionResult::ErreurConversion(raw) => {
-                b.append_null();
-                metrics.total_conversion_errors += 1;
-                metrics.echantillon.add(raw);
-            }
-        }
-    }
-    Arc::new(b.finish())
-}
-pub fn build_float64_column(
-    values: &[String],
-    metrics: &mut ColumnMetrics,
-    convertir: fn(&str) -> ConversionResult<f64>,
-) -> ArrayRef {
-    let mut b = Float64Builder::new();
-    for v in values {
-        match convertir(v) {
-            ConversionResult::Valide(x) => {
-                b.append_value(x);
-                metrics.total_valid_values += 1;
-            }
-            ConversionResult::NullExplicite => {
-                b.append_null();
-                metrics.total_null_text += 1;
-            }
-            ConversionResult::ErreurConversion(raw) => {
-                b.append_null();
-                metrics.total_conversion_errors += 1;
-                metrics.echantillon.add(raw);
-            }
-        }
-    }
-    Arc::new(b.finish())
-}
-pub fn build_date32_column(
-    values: &[String],
-    metrics: &mut ColumnMetrics,
-    convertir: fn(&str) -> ConversionResult<i32>,
-) -> ArrayRef {
-    let mut b = Date32Builder::new();
-    for v in values {
-        match convertir(v) {
-            ConversionResult::Valide(x) => {
-                b.append_value(x);
-                metrics.total_valid_values += 1;
-            }
-            ConversionResult::NullExplicite => {
-                b.append_null();
-                metrics.total_null_text += 1;
-            }
-            ConversionResult::ErreurConversion(raw) => {
-                b.append_null();
-                metrics.total_conversion_errors += 1;
-                metrics.echantillon.add(raw);
-            }
-        }
-    }
-    Arc::new(b.finish())
-}
+
 pub fn build_timestamp_column(
-    values: &[String],
+    values: &[&str],
     metrics: &mut ColumnMetrics,
-    convertir: fn(&str) -> ConversionResult<i64>,
-    unit: &TimeUnit,
+    unit: TimeUnit,
 ) -> ArrayRef {
+    let convert = |v: &str| convert_to_timestamp(v, unit);
     match unit {
-        TimeUnit::Second => {
-            let mut b = TimestampSecondBuilder::new();
-            for v in values {
-                match convertir(v) {
-                    ConversionResult::Valide(x) => {
-                        b.append_value(x / 1000);
-                        metrics.total_valid_values += 1;
-                    }
-                    ConversionResult::NullExplicite => {
-                        b.append_null();
-                        metrics.total_null_text += 1;
-                    }
-                    ConversionResult::ErreurConversion(raw) => {
-                        b.append_null();
-                        metrics.total_conversion_errors += 1;
-                        metrics.echantillon.add(raw);
-                    }
-                }
-            }
-            Arc::new(b.finish())
-        }
+        TimeUnit::Second => build_primitive_column::<TimestampSecondType>(values, metrics, convert),
         TimeUnit::Millisecond => {
-            let mut b = TimestampMillisecondBuilder::new();
-            for v in values {
-                match convertir(v) {
-                    ConversionResult::Valide(x) => {
-                        b.append_value(x);
-                        metrics.total_valid_values += 1;
-                    }
-                    ConversionResult::NullExplicite => {
-                        b.append_null();
-                        metrics.total_null_text += 1;
-                    }
-                    ConversionResult::ErreurConversion(raw) => {
-                        b.append_null();
-                        metrics.total_conversion_errors += 1;
-                        metrics.echantillon.add(raw);
-                    }
-                }
-            }
-            Arc::new(b.finish())
+            build_primitive_column::<TimestampMillisecondType>(values, metrics, convert)
         }
         TimeUnit::Microsecond => {
-            let mut b = TimestampMicrosecondBuilder::new();
-            for v in values {
-                match convertir(v) {
-                    ConversionResult::Valide(x) => {
-                        b.append_value(x * 1_000);
-                        metrics.total_valid_values += 1;
-                    }
-                    ConversionResult::NullExplicite => {
-                        b.append_null();
-                        metrics.total_null_text += 1;
-                    }
-                    ConversionResult::ErreurConversion(raw) => {
-                        b.append_null();
-                        metrics.total_conversion_errors += 1;
-                        metrics.echantillon.add(raw);
-                    }
-                }
-            }
-            Arc::new(b.finish())
+            build_primitive_column::<TimestampMicrosecondType>(values, metrics, convert)
         }
         TimeUnit::Nanosecond => {
-            let mut b = TimestampNanosecondBuilder::new();
-            for v in values {
-                match convertir(v) {
-                    ConversionResult::Valide(x) => {
-                        b.append_value(x * 1_000_000);
-                        metrics.total_valid_values += 1;
-                    }
-                    ConversionResult::NullExplicite => {
-                        b.append_null();
-                        metrics.total_null_text += 1;
-                    }
-                    ConversionResult::ErreurConversion(raw) => {
-                        b.append_null();
-                        metrics.total_conversion_errors += 1;
-                        metrics.echantillon.add(raw);
-                    }
-                }
-            }
-            Arc::new(b.finish())
+            build_primitive_column::<TimestampNanosecondType>(values, metrics, convert)
         }
     }
 }
-pub fn build_binary_column(values: &[String], metrics: &mut ColumnMetrics) -> ArrayRef {
-    let mut b = BinaryBuilder::new();
-    for v in values {
-        if is_null_text(v) {
-            b.append_null();
-            metrics.total_null_text += 1;
-        } else {
-            b.append_value(v.as_bytes());
-            metrics.total_valid_values += 1;
-        }
-    }
-    Arc::new(b.finish())
-}
-pub fn build_large_binary_column(values: &[String], metrics: &mut ColumnMetrics) -> ArrayRef {
-    let mut b = LargeBinaryBuilder::new();
-    for v in values {
-        if is_null_text(v) {
-            b.append_null();
-            metrics.total_null_text += 1;
-        } else {
-            b.append_value(v.as_bytes());
-            metrics.total_valid_values += 1;
-        }
-    }
-    Arc::new(b.finish())
-}
-pub fn build_utf8_column(values: &[String], metrics: &mut ColumnMetrics) -> ArrayRef {
-    let mut b = StringBuilder::new();
-    for v in values {
-        if is_null_text(v) {
-            b.append_null();
-            metrics.total_null_text += 1;
-        } else {
-            b.append_value(v);
-            metrics.total_valid_values += 1;
-        }
-    }
-    Arc::new(b.finish())
-}
-pub fn build_large_utf8_column(
-    values: &[String],
+
+fn build_text_column<O: OffsetSizeTrait>(
+    values: &[&str],
     metrics: &mut ColumnMetrics,
-    force_utf8: bool,
+    keep_null_text: bool,
 ) -> ArrayRef {
-    let mut b = LargeStringBuilder::new();
-    for v in values {
-        if force_utf8 {
-            b.append_value(v);
-            metrics.total_valid_values += 1;
-        } else if is_null_text(v) {
-            b.append_null();
+    let mut builder = GenericStringBuilder::<O>::new();
+    for value in values {
+        if !keep_null_text && is_null_text(value) {
+            builder.append_null();
             metrics.total_null_text += 1;
         } else {
-            b.append_value(v);
+            builder.append_value(value);
             metrics.total_valid_values += 1;
         }
     }
-    Arc::new(b.finish())
+    Arc::new(builder.finish())
 }
-pub fn build_default_column(values: &[String], metrics: &mut ColumnMetrics) -> ArrayRef {
-    build_large_utf8_column(values, metrics, false)
+
+pub fn build_utf8_column(values: &[&str], metrics: &mut ColumnMetrics) -> ArrayRef {
+    build_text_column::<i32>(values, metrics, false)
 }
-// ============================================================
+
+pub fn build_large_utf8_column(
+    values: &[&str],
+    metrics: &mut ColumnMetrics,
+    keep_null_text: bool,
+) -> ArrayRef {
+    build_text_column::<i64>(values, metrics, keep_null_text)
+}
+
+fn build_bytes_column<O: OffsetSizeTrait>(
+    values: &[&str],
+    metrics: &mut ColumnMetrics,
+) -> ArrayRef {
+    let mut builder = GenericBinaryBuilder::<O>::new();
+    for value in values {
+        if is_null_text(value) {
+            builder.append_null();
+            metrics.total_null_text += 1;
+        } else {
+            builder.append_value(value.as_bytes());
+            metrics.total_valid_values += 1;
+        }
+    }
+    Arc::new(builder.finish())
+}
+
+pub fn build_binary_column(values: &[&str], metrics: &mut ColumnMetrics) -> ArrayRef {
+    build_bytes_column::<i32>(values, metrics)
+}
+
+pub fn build_large_binary_column(values: &[&str], metrics: &mut ColumnMetrics) -> ArrayRef {
+    build_bytes_column::<i64>(values, metrics)
+}

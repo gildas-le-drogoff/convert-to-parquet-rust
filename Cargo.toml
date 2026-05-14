@@ -1,6 +1,6 @@
 [package]
 name = "csv_to_parquet"
-version = "0.1.0"
+version = "0.4.0"
 edition = "2021"
 
 [[bin]]
@@ -13,17 +13,25 @@ path = "src/csv_generator.rs"
 
 [dependencies]
 anyhow = "1"
-arrow = "58.1.0"
-chrono = { version = "*", features = ["serde"] }
+arrow = "59.0.0"
+calamine = { version = "0.35.0", features = ["chrono"] }
+chrono = { version = "0.4", features = ["serde"] }
 clap = { version = "4", features = ["derive"] }
 clap_mangen = "0.3"
-colored = "3.1.1"
+colored = "3.1"
 crossbeam = "0.8"
+flate2 = "1"
+glob = "0.3"
+zstd = "0.13"
 csv = "1.4"
 indicatif = "0.18"
 lexical-core = "1.0"
 log = "0.4"
-parquet = "58.1.0"
+num_cpus = "1.17.0"
+parquet = "59.0.0"
 rand = "0.10"
+ratatui = "0.30"
 rayon = "1.12"
+rust_xlsxwriter = "0.95.0"
+serde_json = "1"
 tempfile = "3"

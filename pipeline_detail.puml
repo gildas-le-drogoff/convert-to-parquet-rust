@@ -1,0 +1,74 @@
+@startuml
+!theme plain
+skinparam backgroundColor #0d1117
+skinparam actor {
+  BorderColor #58a6ff
+  FontColor #c9d1d9
+}
+skinparam participant {
+  BackgroundColor #21262d
+  BorderColor #30363d
+  FontColor #c9d1d9
+}
+skinparam queue {
+  BackgroundColor #1c2128
+  BorderColor #58a6ff
+  FontColor #58a6ff
+}
+skinparam arrow {
+  Color #58a6ff
+  FontColor #8b949e
+}
+skinparam note {
+  BackgroundColor #1c2128
+  BorderColor #30363d
+  FontColor #8b949e
+}
+
+title <color:#c9d1d9><size:16>**Parallel Conversion Pipeline**</size></color>
+
+actor "Input" as Input #3fb950
+participant "Schema" as schema #1f6feb
+queue "Channel\n(cap 8)" as channel #0d1117
+participant "Producer\n(100K rows)" as producer #d29922
+participant "Rayon\nWorkers" as workers #79c0ff
+participant "Writer\n(BTreeMap)" as writer #3fb950
+actor "Output" as Output #f78166
+
+== Phase 1: Schema ==
+Input --> schema : sample 10K rows
+schema --> schema : TypeState cascade
+note right of schema
+  <color:#8b949e>--full-schema-inference
+  scans ALL rows</color>
+end note
+
+== Phase 2: Blocks ==
+Input --> producer : stream rows
+producer --> channel : push Block[100K]
+note right of channel
+  <color:#8b949e>Backpressure: blocks
+  when channel full</color>
+end note
+
+== Phase 3: Parallel ==
+channel --> workers : pull blocks
+workers --> workers : per-column metrics
+workers --> writer : (batch_idx, metrics)
+note right of workers
+  <color:#8b949e>N workers concurrently
+  on different blocks</color>
+end note
+
+== Phase 4: Write ==
+writer --> writer : BTreeMap buffer
+writer --> Output : ArrowWriter ZSTD(5)
+note right of writer
+  <color:#8b949e>Preserves input row order
+  despite parallel completion</color>
+end note
+
+== Phase 5: Report ==
+Output --> Output : Validation Report
+
+@enduml

@@ -12,37 +12,40 @@ use std::fs::File;
 use std::path::Path;
 use std::sync::Arc;
 use std::thread;
+
+const PARQUET_ZSTD_LEVEL: i32 = 5;
+
 pub fn start_parquet_writer<Q: AsRef<Path>>(
-    batch_receiver: Receiver<(usize, RecordBatch)>,
+    batch_receiver: Receiver<(usize, RecordBatch, u64)>,
     output_path: Q,
     schema: Arc<arrow::datatypes::Schema>,
-    taille_bloc: usize,
+    max_row_group_rows: usize,
     progress_bar: ProgressBar,
 ) -> Result<thread::JoinHandle<Result<()>>> {
     let output_file = File::create(output_path)?;
     let properties = WriterProperties::builder()
-        .set_compression(Compression::ZSTD(ZstdLevel::try_new(5)?))
-        .set_max_row_group_row_count(Option::from(taille_bloc))
+        .set_compression(Compression::ZSTD(ZstdLevel::try_new(PARQUET_ZSTD_LEVEL)?))
+        .set_max_row_group_row_count(Some(max_row_group_rows))
         .build();
     let mut writer = ArrowWriter::try_new(output_file, schema, Some(properties))?;
     Ok(thread::spawn(move || {
-        progress_bar.set_message("Écriture parquet");
-        let mut pending = BTreeMap::new();
+        progress_bar.set_message("Writing parquet");
+        let mut pending: BTreeMap<usize, (RecordBatch, u64)> = BTreeMap::new();
         let mut expected_index = 0usize;
-        for (index, batch) in batch_receiver {
-            pending.insert(index, batch);
-            while let Some(batch) = pending.remove(&expected_index) {
-                let lines = batch.num_rows() as u64;
+        for (index, batch, bytes_read) in batch_receiver {
+            pending.insert(index, (batch, bytes_read));
+            while let Some((batch, bytes_read)) = pending.remove(&expected_index) {
                 writer.write(&batch)?;
-                progress_bar.inc(lines);
+                progress_bar.set_position(bytes_read);
                 expected_index += 1;
             }
         }
-        progress_bar.set_message("Finalisation");
+        progress_bar.set_message("Finalizing");
         writer.close()?;
         Ok(())
     }))
 }
+
 pub fn verify_parquet_schema<P: AsRef<Path>>(path: P) -> Result<()> {
     let file = File::open(&path)?;
     let reader = SerializedFileReader::new(file)?;
@@ -51,6 +54,7 @@ pub fn verify_parquet_schema<P: AsRef<Path>>(path: P) -> Result<()> {
     display_schema_table(schema);
     Ok(())
 }
+
 fn display_schema_table(schema: &parquet::schema::types::SchemaDescriptor) {
     let columns = schema.columns();
     let name_width = columns
@@ -86,10 +90,10 @@ fn display_schema_table(schema: &parquet::schema::types::SchemaDescriptor) {
         width_p = physical_width,
     );
     eprintln!("{}", "-".repeat(total_width));
-    for (index, colonne) in columns.iter().enumerate() {
-        let name = colonne.path().string();
-        let logical = logical_type(colonne.as_ref());
-        let physical = format!("{:?}", colonne.physical_type());
+    for (index, column) in columns.iter().enumerate() {
+        let name = column.path().string();
+        let logical = logical_type(column.as_ref());
+        let physical = format!("{:?}", column.physical_type());
         eprintln!(
             "{:>width_i$}  {:<width_n$}  {:<width_l$}  {:<width_p$}",
             index,
@@ -104,11 +108,12 @@ fn display_schema_table(schema: &parquet::schema::types::SchemaDescriptor) {
     }
     eprintln!();
 }
-fn logical_type(colonne: &parquet::schema::types::ColumnDescriptor) -> String {
-    if let Some(logical) = colonne.logical_type_ref() {
+
+fn logical_type(column: &parquet::schema::types::ColumnDescriptor) -> String {
+    if let Some(logical) = column.logical_type_ref() {
         format!("{logical:?}")
     } else {
-        let converted = colonne.converted_type();
+        let converted = column.converted_type();
         if converted != ConvertedType::NONE {
             format!("{converted:?}")
         } else {
@@ -116,4 +121,3 @@ fn logical_type(colonne: &parquet::schema::types::ColumnDescriptor) -> String {
         }
     }
 }
-// ============================================================

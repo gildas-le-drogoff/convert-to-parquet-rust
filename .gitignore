@@ -1,6 +1,10 @@
 *$py.class
 **/*.rs.bk
+*.bin
 *.cover
+*.cast
+*codecat*
+*.1
 *.csv
 *.egg
 *.egg-info/
@@ -8,6 +12,8 @@
 *.manifest
 *.mo
 *.parquet
+*.json
+*.ndjson
 *.pdb
 *.pot
 *.py,cover
@@ -16,6 +22,7 @@
 *.so
 *.spec
 *.tsv
+*.xlsx
 .Python
 .cache
 .coverage
@@ -41,6 +48,7 @@
 .tox/
 .venv
 .webassets-cache
+.~lock.*#
 /site
 Cargo.lock
 ENV/
@@ -80,7 +88,15 @@ pyrightconfig.json
 sdist/
 share/python-wheels/
 target/
+.cargo-home/
+.mdbook/
+book/book/
 var/
 venv.bak/
 venv/
 wheels/
+# Session transcripts / conversation dumps (not project deliverables)
+.memsearch/
+CHAT.md
+RELEASE_AUDIT_*.md
+2026-*.txt

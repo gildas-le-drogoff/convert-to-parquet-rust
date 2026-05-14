@@ -24,8 +24,10 @@ fn test_inference_pure_timestamp() {
     ));
 }
 
+// 99.5% valid timestamps + 0.5% garbage: above the confidence threshold,
+// so the majority type wins and the noise is coerced to NULL at conversion.
 #[test]
-fn test_inference_timestamp_with_invalids_becomes_largeutf8() {
+fn test_inference_timestamp_tolerates_minority_noise() {
     let mut content = String::from("a\n");
     for _ in 0..995 {
         content.push_str("2024-01-01 00:00:00\n");
@@ -35,7 +37,10 @@ fn test_inference_timestamp_with_invalids_becomes_largeutf8() {
     }
     let csv = csv_temp(&content);
     let schema = infer_schema(csv.path(), b',', true, true).unwrap();
-    assert_eq!(schema.fields()[0].data_type(), &DataType::LargeUtf8);
+    assert!(matches!(
+        schema.fields()[0].data_type(),
+        DataType::Timestamp(_, _)
+    ));
 }
 
 #[test]

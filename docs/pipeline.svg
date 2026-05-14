@@ -1,0 +1,392 @@
+<svg
+  xmlns="http://www.w3.org/2000/svg"
+  viewBox="0 0 900 520"
+  font-family="'SF Mono','Cascadia Code','Fira Code',monospace"
+>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#0d1117" />
+      <stop offset="100%" stop-color="#161b22" />
+    </linearGradient>
+    <linearGradient id="input" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#58a6ff" />
+      <stop offset="100%" stop-color="#1f6feb" />
+    </linearGradient>
+    <linearGradient id="analysis" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#3fb950" />
+      <stop offset="100%" stop-color="#1a7f37" />
+    </linearGradient>
+    <linearGradient id="parallel" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#d2a8ff" />
+      <stop offset="100%" stop-color="#8957e5" />
+    </linearGradient>
+    <linearGradient id="write" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#f0883e" />
+      <stop offset="100%" stop-color="#bd561d" />
+    </linearGradient>
+    <linearGradient id="output" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ff7b72" />
+      <stop offset="100%" stop-color="#da3633" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur" />
+      <feMerge>
+        <feMergeNode in="blur" />
+        <feMergeNode in="SourceGraphic" />
+      </feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow
+        dx="0"
+        dy="2"
+        stdDeviation="4"
+        flood-color="#000"
+        flood-opacity="0.5"
+      />
+    </filter>
+    <marker
+      id="arrow"
+      markerWidth="10"
+      markerHeight="7"
+      refX="10"
+      refY="3.5"
+      orient="auto"
+      fill="#8b949e"
+    >
+      <polygon points="0 0, 10 3.5, 0 7" />
+    </marker>
+  </defs>
+
+  <rect width="900" height="520" fill="url(#bg)" rx="12" />
+
+  <!-- Title -->
+  <text
+    x="450"
+    y="40"
+    text-anchor="middle"
+    fill="#e6edf3"
+    font-size="18"
+    font-weight="bold"
+    font-family="'SF Pro Display',-apple-system, sans-serif"
+  >
+    Conversion Pipeline
+  </text>
+
+  <!-- Stage 1: Input -->
+  <rect
+    x="50"
+    y="65"
+    width="180"
+    height="80"
+    rx="10"
+    fill="url(#input)"
+    filter="url(#shadow)"
+  />
+  <text
+    x="140"
+    y="97"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="13"
+    font-weight="bold"
+  >
+    CSV / TSV / JSON
+  </text>
+  <text
+    x="140"
+    y="116"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="11"
+    opacity="0.85"
+  >
+    XLSX / ODS / XLS
+  </text>
+  <text
+    x="140"
+    y="133"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.65"
+  >
+    *.csv *.json *.xlsx …
+  </text>
+
+  <!-- Arrow 1→2 -->
+  <line
+    x1="230"
+    y1="105"
+    x2="280"
+    y2="105"
+    stroke="#8b949e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+
+  <!-- Stage 2: Detection -->
+  <rect
+    x="290"
+    y="65"
+    width="220"
+    height="80"
+    rx="10"
+    fill="url(#analysis)"
+    filter="url(#shadow)"
+  />
+  <text
+    x="400"
+    y="93"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="12"
+    font-weight="bold"
+  >
+    🔍 Detection &amp; Inference
+  </text>
+  <text
+    x="400"
+    y="112"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.85"
+  >
+    Delimiter · Header · Format
+  </text>
+  <text
+    x="400"
+    y="130"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.85"
+  >
+    Schema Inference (10K sample)
+  </text>
+
+  <!-- Arrow 2→3 -->
+  <line
+    x1="510"
+    y1="105"
+    x2="560"
+    y2="105"
+    stroke="#8b949e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+
+  <!-- Stage 3: Pipeline -->
+  <rect
+    x="570"
+    y="55"
+    width="280"
+    height="100"
+    rx="10"
+    fill="url(#parallel)"
+    filter="url(#shadow)"
+  />
+  <text
+    x="710"
+    y="80"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="12"
+    font-weight="bold"
+  >
+    ⚡ Parallel Pipeline
+  </text>
+  <text
+    x="710"
+    y="100"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.85"
+  >
+    100K-row block reader
+  </text>
+  <text
+    x="710"
+    y="118"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.85"
+  >
+    Rayon parallel block analysis
+  </text>
+  <text
+    x="710"
+    y="136"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.85"
+  >
+    Crossbeam bounded channels
+  </text>
+
+  <!-- Stage 4: Write -->
+  <rect
+    x="220"
+    y="210"
+    width="220"
+    height="80"
+    rx="10"
+    fill="url(#write)"
+    filter="url(#shadow)"
+  />
+  <text
+    x="330"
+    y="240"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="13"
+    font-weight="bold"
+  >
+    💾 Ordered Parquet Writer
+  </text>
+  <text
+    x="330"
+    y="258"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.85"
+  >
+    BTreeMap reordering
+  </text>
+  <text
+    x="330"
+    y="276"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.85"
+  >
+    ZSTD compression (level 5)
+  </text>
+
+  <!-- Arrow down from stage 3 to stage 4 -->
+  <path
+    d="M 660 155 Q 660 190 440 210"
+    fill="none"
+    stroke="#8b949e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+    stroke-dasharray="5,3"
+  />
+
+  <!-- Stage 5: Output & Report -->
+  <rect
+    x="470"
+    y="210"
+    width="220"
+    height="80"
+    rx="10"
+    fill="url(#output)"
+    filter="url(#shadow)"
+  />
+  <text
+    x="580"
+    y="240"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="13"
+    font-weight="bold"
+  >
+    📋 Validation Report
+  </text>
+  <text
+    x="580"
+    y="258"
+    text-anchor="middle"
+    fill="#fff"
+    font-size="10"
+    opacity="0.85"
+  >
+    Row consistency check
+  </text>
+ 
+  <!-- Arrow 4→5 -->
+  <line
+    x1="440"
+    y1="250"
+    x2="465"
+    y2="250"
+    stroke="#8b949e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+
+  <!-- Result output -->
+  <rect
+    x="220"
+    y="355"
+    width="470"
+    height="55"
+    rx="30"
+    fill="none"
+    stroke="#f0883e"
+    stroke-width="2"
+    stroke-dasharray="6,3"
+  />
+  <text
+    x="455"
+    y="382"
+    text-anchor="middle"
+    fill="#f0883e"
+    font-size="14"
+    font-weight="bold"
+  >
+    📁 output.parquet
+  </text>
+  <text
+    x="455"
+    y="398"
+    text-anchor="middle"
+    fill="#f0883e"
+    font-size="10"
+    opacity="0.7"
+  >
+    Arrow + Parquet 59 · ZSTD · Columnar storage
+  </text>
+
+  <!-- Arrow down from 4/5 to result -->
+  <line
+    x1="330"
+    y1="290"
+    x2="330"
+    y2="350"
+    stroke="#8b949e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+  <line
+    x1="580"
+    y1="290"
+    x2="580"
+    y2="350"
+    stroke="#8b949e"
+    stroke-width="2"
+    marker-end="url(#arrow)"
+  />
+
+  <!-- Legend -->
+  <rect x="140" y="440" width="12" height="12" rx="3" fill="url(#input)" />
+  <text x="158" y="451" fill="#8b949e" font-size="11">Input</text>
+  <rect x="220" y="440" width="12" height="12" rx="3" fill="url(#analysis)" />
+  <text x="238" y="451" fill="#8b949e" font-size="11">Detection</text>
+  <rect x="320" y="440" width="12" height="12" rx="3" fill="url(#parallel)" />
+  <text x="338" y="451" fill="#8b949e" font-size="11">Parallel</text>
+  <rect x="410" y="440" width="12" height="12" rx="3" fill="url(#write)" />
+  <text x="428" y="451" fill="#8b949e" font-size="11">Write</text>
+  <rect x="490" y="440" width="12" height="12" rx="3" fill="url(#output)" />
+  <text x="508" y="451" fill="#8b949e" font-size="11">Report</text>
+
+  <!-- Footer -->
+  <text x="450" y="498" text-anchor="middle" fill="#484f58" font-size="10">
+    arrow 59 · parquet 59 · rayon · crossbeam · zstd · indicatif
+  </text>
+</svg>

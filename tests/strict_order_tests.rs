@@ -14,7 +14,7 @@ use tempfile::NamedTempFile;
 #[test]
 fn test_strict_row_order() -> Result<()> {
     let schema = Arc::new(Schema::new(vec![Field::new("id", DataType::Int64, false)]));
-    let (tx, rx) = unbounded::<(usize, RecordBatch)>();
+    let (tx, rx) = unbounded::<(usize, RecordBatch, u64)>();
     let output = NamedTempFile::new()?;
     let handle = start_parquet_writer(
         rx,
@@ -37,16 +37,16 @@ fn test_strict_row_order() -> Result<()> {
         vec![Arc::new(Int64Array::from(vec![6, 7, 8])) as ArrayRef],
     )?;
 
-    tx.send((2, batch2))?;
-    tx.send((0, batch0))?;
-    tx.send((1, batch1))?;
+    tx.send((2, batch2, 30))?;
+    tx.send((0, batch0, 10))?;
+    tx.send((1, batch1, 20))?;
     drop(tx);
     handle.join().unwrap()?;
 
     let file = File::open(output.path())?;
-    let mut reader = ParquetRecordBatchReaderBuilder::try_new(file)?.build()?;
+    let reader = ParquetRecordBatchReaderBuilder::try_new(file)?.build()?;
     let mut expected = 0i64;
-    while let Some(batch_result) = reader.next() {
+    for batch_result in reader {
         let batch = batch_result?;
         let col = batch
             .column(0)
