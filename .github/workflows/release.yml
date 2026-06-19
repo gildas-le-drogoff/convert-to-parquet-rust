@@ -1,0 +1,160 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            ext: ""
+          - os: ubuntu-24.04-arm
+            target: aarch64-unknown-linux-gnu
+            ext: ""
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            ext: ".exe"
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            ext: ""
+          - os: macos-13
+            target: x86_64-apple-darwin
+            ext: ""
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache Cargo dependencies
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.target }}-
+
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Generate man page
+        if: matrix.os != 'windows-latest'
+        run: |
+          ./target/${{ matrix.target }}/release/convert_to_parquet --man > convert_to_parquet.1
+
+      - name: Install UPX
+        uses: taiki-e/install-action@v2
+        with:
+          tool: upx
+
+      - name: Compress binaries with UPX
+        run: |
+          upx --best --lzma target/${{ matrix.target }}/release/convert_to_parquet${{ matrix.ext }}
+          upx --best --lzma target/${{ matrix.target }}/release/csv_generator${{ matrix.ext }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: |
+            target/${{ matrix.target }}/release/convert_to_parquet${{ matrix.ext }}
+            target/${{ matrix.target }}/release/csv_generator${{ matrix.ext }}
+            convert_to_parquet.1
+          compression-level: 0
+          if-no-files-found: error
+
+  release:
+    name: Create / Update Release
+    needs: [build]
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Extract version from Cargo.toml
+        id: version
+        run: |
+          VERSION=$(grep -m1 '^version =' Cargo.toml | sed 's/.*"\(.*\)".*/\1/')
+          echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+          echo "tag=v${VERSION}" >> "$GITHUB_OUTPUT"
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Display structure of downloaded files
+        run: ls -lhR artifacts/
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          for dir in artifacts/*/; do
+            platform=$(basename "$dir")
+            # Determine extension for the platform
+            case "$platform" in
+              x86_64-pc-windows-msvc)  ext=".exe" ;;
+              *)                        ext=""    ;;
+            esac
+
+            # Package each binary with platform name
+            cp "${dir}convert_to_parquet${ext}" "release-assets/convert_to_parquet-${platform}${ext}"
+            cp "${dir}csv_generator${ext}" "release-assets/csv_generator-${platform}${ext}"
+
+            # Copy man page if present (non-Windows builds)
+            if [ -f "${dir}convert_to_parquet.1" ]; then
+              cp "${dir}convert_to_parquet.1" "release-assets/convert_to_parquet-${platform}.1"
+            fi
+          done
+          ls -lh release-assets/
+
+      - name: Create / Update Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ steps.version.outputs.tag }}
+          name: ${{ steps.version.outputs.tag }}
+          body: |
+            ## Release ${{ steps.version.outputs.version }}
+
+            Automated build from commit ${{ github.sha }}.
+
+            ### Included binaries
+
+            | Platform | Architecture | Binary |
+            |----------|-------------|--------|
+            | Linux    | x86_64      | `convert_to_parquet-x86_64-unknown-linux-gnu` |
+            | Linux    | ARM64       | `convert_to_parquet-aarch64-unknown-linux-gnu` |
+            | macOS    | ARM64 (M1+) | `convert_to_parquet-aarch64-apple-darwin` |
+            | macOS    | x86_64      | `convert_to_parquet-x86_64-apple-darwin` |
+            | Windows  | x86_64      | `convert_to_parquet-x86_64-pc-windows-msvc.exe` |
+
+            All binaries are compressed with UPX (LZMA).
+          allowUpdates: true
+          replacesArtifacts: true
+          artifacts: "release-assets/*"
+          artifactContentType: application/octet-stream
+          makeLatest: true
