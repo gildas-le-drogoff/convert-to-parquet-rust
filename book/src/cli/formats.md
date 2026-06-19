@@ -43,5 +43,5 @@ The extensions `.gz` (gzip) and `.zst` (Zstandard) are automatically decompresse
 For unsupported formats (`.bz2`, `.xz`), use standard input:
 
 ```bash
-bzcat data.csv.bz2 | csv_to_parquet -
+bzcat data.csv.bz2 | convert_to_parquet -
 ```

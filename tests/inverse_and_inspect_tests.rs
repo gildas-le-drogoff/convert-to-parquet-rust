@@ -11,11 +11,11 @@
 // same code paths the binary runs.
 // ============================================================
 
-use csv_to_parquet::conversion::convert_csv_to_parquet;
-use csv_to_parquet::inspect::{display_parquet_stats, is_parquet};
-use csv_to_parquet::json::{export_json_to_csv, is_json, JSON_DELIMITER};
-use csv_to_parquet::to_csv::convert_parquet_to_csv;
-use csv_to_parquet::to_jsonl::convert_parquet_to_jsonl;
+use convert_to_parquet::conversion::convert_convert_to_parquet;
+use convert_to_parquet::inspect::{display_parquet_stats, is_parquet};
+use convert_to_parquet::json::{export_json_to_csv, is_json, JSON_DELIMITER};
+use convert_to_parquet::to_csv::convert_parquet_to_csv;
+use convert_to_parquet::to_jsonl::convert_parquet_to_jsonl;
 use serde_json::Value;
 use std::io::Write;
 use std::path::Path;
@@ -32,10 +32,10 @@ fn temp_with(content: &str, ext: &str) -> NamedTempFile {
 }
 
 /// Convert CSV text to a Parquet file and return the (guard, path).
-fn csv_to_parquet(csv: &str) -> (NamedTempFile, NamedTempFile) {
+fn convert_to_parquet(csv: &str) -> (NamedTempFile, NamedTempFile) {
     let input = temp_with(csv, "csv");
     let output = Builder::new().suffix(".parquet").tempfile().unwrap();
-    convert_csv_to_parquet(input.path(), output.path(), true, false, false, None).unwrap();
+    convert_convert_to_parquet(input.path(), output.path(), true, false, false, None).unwrap();
     (input, output)
 }
 
@@ -67,7 +67,7 @@ fn read_jsonl(path: &Path) -> Vec<Value> {
 #[test]
 fn test_parquet_to_csv_roundtrip() {
     // CSV → Parquet → CSV must preserve header and typed values.
-    let (_in, parquet) = csv_to_parquet("id,name\n1,alice\n2,bob\n3,carol\n");
+    let (_in, parquet) = convert_to_parquet("id,name\n1,alice\n2,bob\n3,carol\n");
     let csv_out = Builder::new().suffix(".csv").tempfile().unwrap();
     convert_parquet_to_csv(parquet.path(), csv_out.path()).unwrap();
 
@@ -82,7 +82,7 @@ fn test_parquet_to_csv_roundtrip() {
 #[test]
 fn test_parquet_to_csv_preserves_nulls_as_empty() {
     // Middle value is an explicit null token → empty CSV field on the way back.
-    let (_in, parquet) = csv_to_parquet("id,note\n1,hello\n2,NULL\n3,world\n");
+    let (_in, parquet) = convert_to_parquet("id,note\n1,hello\n2,NULL\n3,world\n");
     let csv_out = Builder::new().suffix(".csv").tempfile().unwrap();
     convert_parquet_to_csv(parquet.path(), csv_out.path()).unwrap();
 
@@ -101,7 +101,7 @@ fn test_parquet_to_csv_missing_input_errors() {
 
 #[test]
 fn test_parquet_to_jsonl_values() {
-    let (_in, parquet) = csv_to_parquet("id,name\n1,alice\n2,bob\n");
+    let (_in, parquet) = convert_to_parquet("id,name\n1,alice\n2,bob\n");
     let jsonl_out = Builder::new().suffix(".jsonl").tempfile().unwrap();
     convert_parquet_to_jsonl(parquet.path(), jsonl_out.path()).unwrap();
 
@@ -116,7 +116,7 @@ fn test_parquet_to_jsonl_values() {
 #[test]
 fn test_parquet_to_jsonl_omits_null_fields() {
     // arrow-json omits null fields entirely rather than writing `null`.
-    let (_in, parquet) = csv_to_parquet("id,note\n1,hello\n2,NULL\n");
+    let (_in, parquet) = convert_to_parquet("id,note\n1,hello\n2,NULL\n");
     let jsonl_out = Builder::new().suffix(".jsonl").tempfile().unwrap();
     convert_parquet_to_jsonl(parquet.path(), jsonl_out.path()).unwrap();
 
@@ -142,7 +142,7 @@ fn test_is_parquet_detection() {
 
 #[test]
 fn test_display_parquet_stats_succeeds() {
-    let (_in, parquet) = csv_to_parquet("id,name\n1,alice\n2,bob\n3,carol\n");
+    let (_in, parquet) = convert_to_parquet("id,name\n1,alice\n2,bob\n3,carol\n");
     // Default action on a .parquet input: must read footer metadata without error.
     assert!(display_parquet_stats(parquet.path()).is_ok());
 }
@@ -164,7 +164,7 @@ fn test_json_array_to_parquet_end_to_end() {
     assert_eq!(export.row_count, 2);
 
     let parquet = Builder::new().suffix(".parquet").tempfile().unwrap();
-    convert_csv_to_parquet(
+    convert_convert_to_parquet(
         &export.csv_path,
         parquet.path(),
         true,
@@ -191,7 +191,7 @@ fn test_jsonl_to_parquet_end_to_end() {
     assert_eq!(export.row_count, 2);
 
     let parquet = Builder::new().suffix(".parquet").tempfile().unwrap();
-    convert_csv_to_parquet(
+    convert_convert_to_parquet(
         &export.csv_path,
         parquet.path(),
         true,

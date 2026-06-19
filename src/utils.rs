@@ -378,7 +378,7 @@ pub fn decompress_if_needed(path: &Path) -> Result<(PathBuf, Option<NamedTempFil
             decompress_to_temp(zstd::Decoder::new(file)?, "zstd")
         }
         "bz2" | "bzip2" | "xz" | "lzma" => anyhow::bail!(
-            "{} {} format not supported directly. Use stdin: {} | csv_to_parquet -",
+            "{} {} format not supported directly. Use stdin: {} | convert_to_parquet -",
             warning("Hint:"),
             ext,
             if matches!(ext.as_str(), "bz2" | "bzip2") {

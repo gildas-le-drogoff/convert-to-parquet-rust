@@ -1,7 +1,7 @@
 // tests/error_analysis_tests.rs
 use arrow::datatypes::{DataType, Field, Schema};
 use csv::StringRecord;
-use csv_to_parquet::analysis::analyze_block;
+use convert_to_parquet::analysis::analyze_block;
 use std::sync::Arc;
 
 #[test]

@@ -1,10 +1,10 @@
 [package]
-name = "csv_to_parquet"
+name = "convert_to_parquet"
 version = "0.4.0"
 edition = "2021"
 
 [[bin]]
-name = "csv_to_parquet"
+name = "convert_to_parquet"
 path = "src/main.rs"
 
 [[bin]]

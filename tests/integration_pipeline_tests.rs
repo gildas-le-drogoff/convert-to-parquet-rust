@@ -1,6 +1,6 @@
 // tests/integration_pipeline_tests.rs
 use arrow::array::{Array, LargeStringArray};
-use csv_to_parquet::conversion::convert_csv_to_parquet;
+use convert_to_parquet::conversion::convert_convert_to_parquet;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use std::fs::File;
@@ -26,7 +26,7 @@ fn test_full_pipeline_row_coherence() {
         writeln!(csv, "{},{}", i, i * 2).unwrap();
     }
     let output = NamedTempFile::new().unwrap();
-    convert_csv_to_parquet(csv.path(), output.path(), true, false, false, None).unwrap();
+    convert_convert_to_parquet(csv.path(), output.path(), true, false, false, None).unwrap();
     assert_eq!(parquet_row_count(output.path()), 1000);
 }
 
@@ -35,7 +35,7 @@ fn test_quoted_multiline_field_preserved() {
     let mut csv = NamedTempFile::new().unwrap();
     write!(csv, "a,b\n1,\"line1\nline2\"\n2,plain\n").unwrap();
     let output = NamedTempFile::new().unwrap();
-    convert_csv_to_parquet(csv.path(), output.path(), true, false, false, None).unwrap();
+    convert_convert_to_parquet(csv.path(), output.path(), true, false, false, None).unwrap();
     assert_eq!(parquet_row_count(output.path()), 2);
 
     let file = File::open(output.path()).unwrap();

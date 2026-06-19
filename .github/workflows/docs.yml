@@ -18,20 +18,40 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Cache mdBook
+        id: cache-mdbook
+        uses: actions/cache@v5
+        with:
+          path: ~/.cargo/bin/mdbook
+          key: ${{ runner.os }}-mdbook-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-mdbook-
 
       - name: Install mdBook
+        if: steps.cache-mdbook.outputs.cache-hit != 'true'
         run: |
-          curl -sL https://github.com/rust-lang/mdBook/releases/latest/download/mdbook-x86_64-unknown-linux-gnu.tar.gz \
-            | tar xz -C /usr/local/bin
+          # Use cargo for more reliable installation
+          cargo install mdbook --locked
+          # Or use the manual download approach (fallback)
+          # tag=$(curl -sL https://api.github.com/repos/rust-lang/mdBook/releases/latest | jq -r .tag_name)
+          # url="https://github.com/rust-lang/mdBook/releases/download/${tag}/mdbook-${tag}-x86_64-unknown-linux-gnu.tar.gz"
+          # curl -sL "$url" | tar xz -C ~/.cargo/bin
+
+      - name: Setup mdBook in PATH
+        run: |
+          echo "$HOME/.cargo/bin" >> $GITHUB_PATH
 
       - name: Build documentation
         run: mdbook build book
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
-          path: book/book
+          path: book/book # mdBook output dir (book/ source -> book/book/ html)
+          retention-days: 1
 
   deploy:
     environment:
@@ -42,4 +62,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

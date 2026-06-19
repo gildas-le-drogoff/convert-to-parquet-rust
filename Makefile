@@ -7,7 +7,7 @@ CARGO       ?= cargo
 INSTALL     ?= sudo install
 RM          ?= rm -f
 
-BIN_NAME    := csv_to_parquet
+BIN_NAME    := convert_to_parquet
 RELEASE_BIN := target/release/$(BIN_NAME)
 MAN_PAGE    := $(BIN_NAME).1
 
@@ -76,4 +76,3 @@ clean:
 doc:
 	cd book && mdbook build
 	@echo "Documentation built at book/book/"
-

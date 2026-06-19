@@ -1,7 +1,7 @@
 // tests/conversions_tests.rs
 use arrow::datatypes::{DataType, Field, Schema};
 use csv::StringRecord;
-use csv_to_parquet::analysis::analyze_block;
+use convert_to_parquet::analysis::analyze_block;
 use std::sync::Arc;
 
 fn single_column(values: &[&str]) -> Vec<StringRecord> {

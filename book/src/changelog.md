@@ -24,7 +24,7 @@
 
 - Exposed a reusable library (`src/lib.rs`) consumed by integration tests
 - `rust_xlsxwriter` promoted to a runtime dependency (XLSX export), added `ratatui`
-- Regenerated man page (`csv_to_parquet.1`): up-to-date version and synopsis
+- Regenerated man page (`convert_to_parquet.1`): up-to-date version and synopsis
 
 ### 🧪 Tests
 
@@ -58,7 +58,7 @@
 
 #### Enhanced CLI Interface
 
-- **Glob Expansion**: `csv_to_parquet *.csv` processes all matching files
+- **Glob Expansion**: `convert_to_parquet *.csv` processes all matching files
 - **Forced Delimiter**: `--delimiter` (supports `,` `;` `\t` `|`)
 - **Flexible Output**: `-o` can be a file or folder (automatic detection)
 - **Parquet Interactive Mode**: if interactive terminal, displays schema + statistics then offers CSV/JSONL export

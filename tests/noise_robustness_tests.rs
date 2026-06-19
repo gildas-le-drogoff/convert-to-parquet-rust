@@ -4,8 +4,8 @@
 // text, and those values must become NULL at conversion without panicking.
 use arrow::array::{Array, Int64Array};
 use arrow::datatypes::DataType;
-use csv_to_parquet::conversion::convert_csv_to_parquet;
-use csv_to_parquet::schema::infer_schema;
+use convert_to_parquet::conversion::convert_convert_to_parquet;
+use convert_to_parquet::schema::infer_schema;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 use std::fs::File;
 use std::io::Write;
@@ -115,7 +115,7 @@ fn read_int64_column(path: &Path) -> Vec<Option<i64>> {
 fn test_end_to_end_noise_coerced_to_null() {
     let csv = csv_temp(&noisy_column("7", 990, "boom", 10));
     let output = NamedTempFile::new().unwrap();
-    convert_csv_to_parquet(csv.path(), output.path(), true, false, false, None).unwrap();
+    convert_convert_to_parquet(csv.path(), output.path(), true, false, false, None).unwrap();
 
     let values = read_int64_column(output.path());
     assert_eq!(values.len(), 1000);

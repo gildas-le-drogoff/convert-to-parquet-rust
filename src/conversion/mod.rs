@@ -49,7 +49,7 @@ impl Drop for TickerStopGuard {
     }
 }
 
-pub fn convert_csv_to_parquet<P: AsRef<Path>, Q: AsRef<Path>>(
+pub fn convert_convert_to_parquet<P: AsRef<Path>, Q: AsRef<Path>>(
     input_path: P,
     output_path: Q,
     full_schema_inference: bool,

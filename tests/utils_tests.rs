@@ -1,6 +1,6 @@
 // tests/utils_tests.rs
 use arrow::datatypes::TimeUnit;
-use csv_to_parquet::utils::{
+use convert_to_parquet::utils::{
     detect_header, is_null_text, parse_bool, parse_date_ymd, parse_timestamp, parse_timestamp_ms,
 };
 use std::io::Write;

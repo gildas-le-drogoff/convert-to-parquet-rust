@@ -57,7 +57,7 @@ Produces CSV/TSV datasets in `datasets_tests/`.
 A Python script allows validating Parquet output:
 
 ```bash
-python3 test_csv_to_parquet.py
+python3 test_convert_to_parquet.py
 ```
 
 Requirements: `pyarrow` (`pip install pyarrow`).

@@ -5,7 +5,7 @@ The tool automatically detects the operation to perform based on the input file 
 ## Conversion → Parquet (default mode)
 
 ```bash
-csv_to_parquet [OPTIONS] <INPUT...>
+convert_to_parquet [OPTIONS] <INPUT...>
 ```
 
 Automatic input format detection:
@@ -21,19 +21,19 @@ Automatic input format detection:
 ## Reverse Conversion: Parquet → CSV
 
 ```bash
-csv_to_parquet --to-csv <FILE.parquet> -o <OUTPUT.csv>
+convert_to_parquet --to-csv <FILE.parquet> -o <OUTPUT.csv>
 ```
 
 ## Reverse Conversion: Parquet → JSONL
 
 ```bash
-csv_to_parquet --to-jsonl <FILE.parquet> -o <OUTPUT.jsonl>
+convert_to_parquet --to-jsonl <FILE.parquet> -o <OUTPUT.jsonl>
 ```
 
 ## Schema Inspection
 
 ```bash
-csv_to_parquet --view-schema <FILE.parquet>
+convert_to_parquet --view-schema <FILE.parquet>
 ```
 
 Displays Parquet file metadata (compressed/decompressed size per column, null count).
@@ -52,5 +52,5 @@ schema and statistics instead.
 ## Generating the Man Page
 
 ```bash
-csv_to_parquet --man > csv_to_parquet.1
+convert_to_parquet --man > convert_to_parquet.1
 ```

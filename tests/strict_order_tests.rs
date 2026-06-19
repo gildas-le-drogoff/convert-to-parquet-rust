@@ -4,7 +4,7 @@ use arrow::array::{ArrayRef, Int64Array};
 use arrow::datatypes::{DataType, Field, Schema};
 use arrow::record_batch::RecordBatch;
 use crossbeam::channel::unbounded;
-use csv_to_parquet::conversion::start_parquet_writer;
+use convert_to_parquet::conversion::start_parquet_writer;
 use indicatif::ProgressBar;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 use std::fs::File;

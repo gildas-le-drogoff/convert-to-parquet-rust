@@ -7,8 +7,8 @@
 //   - Parquet → JSON (inverse, nesting reconstructed)
 // ============================================================
 
-use csv_to_parquet::json_arrow::{convert_json_to_parquet, json_has_nested};
-use csv_to_parquet::to_json::convert_parquet_to_json;
+use convert_to_parquet::json_arrow::{convert_json_to_parquet, json_has_nested};
+use convert_to_parquet::to_json::convert_parquet_to_json;
 use serde_json::Value;
 use std::io::Write;
 use tempfile::{Builder, NamedTempFile};

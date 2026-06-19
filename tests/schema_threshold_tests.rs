@@ -1,6 +1,6 @@
 // tests/schema_threshold_tests.rs
 use arrow::datatypes::DataType;
-use csv_to_parquet::schema::infer_schema;
+use convert_to_parquet::schema::infer_schema;
 use std::io::Write;
 use tempfile::NamedTempFile;
 

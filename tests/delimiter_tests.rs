@@ -1,5 +1,5 @@
 // tests/delimiter_tests.rs
-use csv_to_parquet::utils::detect_delimiter;
+use convert_to_parquet::utils::detect_delimiter;
 use std::io::Write;
 use tempfile::NamedTempFile;
 

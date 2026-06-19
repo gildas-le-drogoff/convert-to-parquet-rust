@@ -1,7 +1,7 @@
 // ============================================================
 // tests/normalized_tests.rs
 //
-// Integration tests that run csv_to_parquet on every dataset in
+// Integration tests that run convert_to_parquet on every dataset in
 // normalized_tests/ and verify:
 //   - Conversion succeeds (or fails as expected)
 //   - Row count is correct
@@ -16,7 +16,7 @@ use arrow::array::{
     TimestampNanosecondArray, TimestampSecondArray, UInt64Array,
 };
 use arrow::datatypes::DataType;
-use csv_to_parquet::conversion::convert_csv_to_parquet;
+use convert_to_parquet::conversion::convert_convert_to_parquet;
 use parquet::arrow::arrow_reader::ParquetRecordBatchReaderBuilder;
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use std::fs::File;
@@ -42,7 +42,7 @@ fn convert(name: &str, full_inference: bool, force_utf8: bool, delimiter: Option
     // Use a tempfile-based path that is unique per test invocation.
     let tmp = NamedTempFile::new()?;
     let output = tmp.path().to_string_lossy().to_string();
-    convert_csv_to_parquet(&input, &output, full_inference, force_utf8, false, delimiter)?;
+    convert_convert_to_parquet(&input, &output, full_inference, force_utf8, false, delimiter)?;
     let count = parquet_row_count(Path::new(&output));
     tmp.into_temp_path().keep()?; // Don't auto-delete; the caller removes the file explicitly.
     Ok((count, output))
@@ -551,10 +551,10 @@ fn test_big_header() {
 
 #[test]
 fn test_compressed_csv_gz_fails() {
-    // gzip binary → convert_csv_to_parquet fails (no decompression in this function)
+    // gzip binary → convert_convert_to_parquet fails (no decompression in this function)
     let input = "normalized_tests/test_comp.csv.gz";
     let output = "/tmp/test_test_comp.csv.gz.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_err(), "raw gz should fail (binary)");
     let _ = std::fs::remove_file(output);
 }
@@ -563,7 +563,7 @@ fn test_compressed_csv_gz_fails() {
 fn test_bgzf_gz_fails() {
     let input = "normalized_tests/bgzf.gz";
     let output = "/tmp/test_bgzf.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_err());
     let _ = std::fs::remove_file(output);
 }
@@ -574,7 +574,7 @@ fn test_bgzf_gz_fails() {
 fn test_empty_csv_fails() {
     let input = "normalized_tests/empty.csv";
     let output = "/tmp/test_empty.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_err(), "empty.csv should fail");
     let _ = std::fs::remove_file(output);
 }
@@ -609,7 +609,7 @@ fn test_5438_ndjson_like() {
 fn test_invalid_utf_fails() {
     let input = "normalized_tests/invalid_utf.csv";
     let output = "/tmp/test_invalid_utf.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_err());
     let _ = std::fs::remove_file(output);
 }
@@ -618,7 +618,7 @@ fn test_invalid_utf_fails() {
 fn test_invalid_utf_header_fails() {
     let input = "normalized_tests/invalid_utf_header.csv";
     let output = "/tmp/test_invalid_utf_header.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_err());
     let _ = std::fs::remove_file(output);
 }
@@ -627,7 +627,7 @@ fn test_invalid_utf_header_fails() {
 fn test_invalid_utf_quoted_fails() {
     let input = "normalized_tests/invalid_utf_quoted.csv";
     let output = "/tmp/test_invalid_utf_quoted.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_err());
     let _ = std::fs::remove_file(output);
 }
@@ -636,7 +636,7 @@ fn test_invalid_utf_quoted_fails() {
 fn test_invalid_utf_quoted_nl_fails() {
     let input = "normalized_tests/invalid_utf_quoted_nl.csv";
     let output = "/tmp/test_invalid_utf_quoted_nl.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_err());
     let _ = std::fs::remove_file(output);
 }
@@ -649,7 +649,7 @@ fn test_invalid_utf_big() {
     // are written.
     let input = "normalized_tests/invalid_utf_big.csv";
     let output = "/tmp/test_invalid_utf_big.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_ok(), "partial conversion should succeed: {result:?}");
     assert_eq!(parquet_row_count(Path::new(output)), 3030);
     let _ = std::fs::remove_file(output);
@@ -663,7 +663,7 @@ fn test_invalid_utf_big() {
 fn test_invalid_utf_force_utf8_still_fails() {
     let input = "normalized_tests/invalid_utf.csv";
     let output = "/tmp/test_invalid_utf_force.parquet";
-    let result = convert_csv_to_parquet(input, output, true, true, false, None);
+    let result = convert_convert_to_parquet(input, output, true, true, false, None);
     // The csv crate reads StringRecord which requires valid UTF-8
     assert!(result.is_err(), "force_utf8 doesn't affect csv reading");
     let _ = std::fs::remove_file(output);
@@ -686,7 +686,7 @@ fn test_unterminated_quoted_field() {
     // quoted field → conversion succeeds with a single row.
     let input = "normalized_tests/unterminated.csv";
     let output = "/tmp/test_unterminated.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_ok(), "unterminated quote should still convert: {result:?}");
     assert_eq!(parquet_row_count(Path::new(output)), 1);
     let _ = std::fs::remove_file(output);
@@ -700,7 +700,7 @@ fn test_blob_data() {
     // it is valid CSV and converts to a single row.
     let input = "normalized_tests/blob.csv";
     let output = "/tmp/test_blob.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_ok(), "printable blob should convert: {result:?}");
     assert_eq!(parquet_row_count(Path::new(output)), 1);
     let _ = std::fs::remove_file(output);
@@ -713,7 +713,7 @@ fn test_invalid_utf_list() {
     // "[1, 2]" lines with \xff\xff bytes embedded → invalid UTF-8 → fails
     let input = "normalized_tests/invalid_utf_list.csv";
     let output = "/tmp/test_invalid_utf_list.parquet";
-    let result = convert_csv_to_parquet(input, output, true, false, false, None);
+    let result = convert_convert_to_parquet(input, output, true, false, false, None);
     assert!(result.is_err(), "invalid_utf_list.csv has non-UTF-8 bytes → should fail");
     let _ = std::fs::remove_file(output);
 }
@@ -727,8 +727,8 @@ fn test_full_inference_vs_partial() {
     let out_partial = "/tmp/test_test_partial.parquet";
     let out_full = "/tmp/test_test_full.parquet";
 
-    convert_csv_to_parquet(&input, out_partial, false, false, false, None).unwrap();
-    convert_csv_to_parquet(&input, out_full, true, false, false, None).unwrap();
+    convert_convert_to_parquet(&input, out_partial, false, false, false, None).unwrap();
+    convert_convert_to_parquet(&input, out_full, true, false, false, None).unwrap();
 
     let count_partial = parquet_row_count(Path::new(out_partial));
     let count_full = parquet_row_count(Path::new(out_full));

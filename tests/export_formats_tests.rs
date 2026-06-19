@@ -8,18 +8,18 @@
 // ============================================================
 
 use calamine::{Data, Reader, Xlsx};
-use csv_to_parquet::conversion::convert_csv_to_parquet;
-use csv_to_parquet::export::ExportFormat;
+use convert_to_parquet::conversion::convert_convert_to_parquet;
+use convert_to_parquet::export::ExportFormat;
 use serde_json::Value;
 use std::io::Write;
 use tempfile::{Builder, NamedTempFile};
 
-fn csv_to_parquet(csv: &str) -> (NamedTempFile, NamedTempFile) {
+fn convert_to_parquet(csv: &str) -> (NamedTempFile, NamedTempFile) {
     let mut input = Builder::new().suffix(".csv").tempfile().unwrap();
     input.write_all(csv.as_bytes()).unwrap();
     input.flush().unwrap();
     let output = Builder::new().suffix(".parquet").tempfile().unwrap();
-    convert_csv_to_parquet(input.path(), output.path(), true, false, false, None).unwrap();
+    convert_convert_to_parquet(input.path(), output.path(), true, false, false, None).unwrap();
     (input, output)
 }
 
@@ -40,7 +40,7 @@ fn test_export_format_metadata_unique() {
 
 #[test]
 fn test_convert_json_array_roundtrip() {
-    let (_in, parquet) = csv_to_parquet("id,name\n1,alice\n2,bob\n");
+    let (_in, parquet) = convert_to_parquet("id,name\n1,alice\n2,bob\n");
     let out = Builder::new().suffix(".json").tempfile().unwrap();
     let rows = ExportFormat::Json.convert(parquet.path(), out.path()).unwrap();
     assert_eq!(rows, 2);
@@ -53,7 +53,7 @@ fn test_convert_json_array_roundtrip() {
 
 #[test]
 fn test_convert_xlsx_roundtrip() {
-    let (_in, parquet) = csv_to_parquet("id,name\n1,alice\n2,bob\n3,carol\n");
+    let (_in, parquet) = convert_to_parquet("id,name\n1,alice\n2,bob\n3,carol\n");
     let out = Builder::new().suffix(".xlsx").tempfile().unwrap();
     let rows = ExportFormat::Xlsx.convert(parquet.path(), out.path()).unwrap();
     assert_eq!(rows, 3);

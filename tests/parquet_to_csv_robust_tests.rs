@@ -18,7 +18,7 @@ use arrow::array::{
 };
 use arrow::datatypes::{DataType, Field, Schema, TimeUnit};
 use arrow::record_batch::RecordBatch;
-use csv_to_parquet::to_csv::convert_parquet_to_csv;
+use convert_to_parquet::to_csv::convert_parquet_to_csv;
 use parquet::arrow::arrow_writer::ArrowWriter;
 use std::path::Path;
 use std::sync::Arc;

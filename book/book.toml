@@ -1,5 +1,5 @@
 [book]
-title = "csv-to-parquet"
+title = "convert-to-parquet"
 authors = ["Gildas Cadin"]
 language = "fr"
 description = "Convertisseur multi-format vers Parquet en Rust"
@@ -7,9 +7,9 @@ description = "Convertisseur multi-format vers Parquet en Rust"
 [output.html]
 default-theme = "ayu"
 preferred-dark-theme = "ayu"
-edit-url-template = "https://github.com/gildas-le-drogoff/csv_to_parquet/edit/main/{path}"
-git-repository-url = "https://github.com/gildas-le-drogoff/csv_to_parquet"
-site-url = "/csv_to_parquet/"
+edit-url-template = "https://github.com/gildas-le-drogoff/convert_to_parquet/edit/main/{path}"
+git-repository-url = "https://github.com/gildas-le-drogoff/convert_to_parquet"
+site-url = "/convert_to_parquet/"
 
 [output.html.search]
 limit-results = 30

@@ -73,5 +73,5 @@ Extensions `.gz` and `.zst` are automatically detected. The file is decompressed
 For other formats (`.bz2`, `.xz`), the user must decompress via stdin:
 
 ```bash
-bzcat data.csv.bz2 | csv_to_parquet -
+bzcat data.csv.bz2 | convert_to_parquet -
 ```

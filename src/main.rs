@@ -3,16 +3,16 @@
 use anyhow::{anyhow, Context, Result};
 use clap::{CommandFactory, Parser};
 use clap_mangen::Man;
-use csv_to_parquet::conversion::{convert_csv_to_parquet, verify_parquet_schema};
-use csv_to_parquet::export::ExportFormat;
-use csv_to_parquet::inspect::{display_parquet_stats, is_parquet};
-use csv_to_parquet::json::{export_json_to_csv, is_json, stdin_suffix};
-use csv_to_parquet::json_arrow::{convert_json_to_parquet, json_has_nested};
-use csv_to_parquet::tui::run_viewer;
-use csv_to_parquet::utils::{
+use convert_to_parquet::conversion::{convert_convert_to_parquet, verify_parquet_schema};
+use convert_to_parquet::export::ExportFormat;
+use convert_to_parquet::inspect::{display_parquet_stats, is_parquet};
+use convert_to_parquet::json::{export_json_to_csv, is_json, stdin_suffix};
+use convert_to_parquet::json_arrow::{convert_json_to_parquet, json_has_nested};
+use convert_to_parquet::tui::run_viewer;
+use convert_to_parquet::utils::{
     decompress_if_needed, error, path, strip_compression_ext, success, warning,
 };
-use csv_to_parquet::xlsx::{
+use convert_to_parquet::xlsx::{
     export_sheet_to_csv, is_spreadsheet, list_sheet_names, sanitize_sheet_name,
 };
 use log::info;
@@ -25,7 +25,7 @@ use tempfile::Builder;
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "csv_to_parquet",
+    name = "convert_to_parquet",
     version,
     about = "Convert CSV/TSV/XLSX/JSON/Parquet",
     long_about = r#"Convert CSV/TSV, spreadsheets (xlsx/xlsm/xlsb/xls/ods), JSON/JSONL to Parquet,
@@ -35,7 +35,7 @@ Running on a Parquet file without an export flag opens an interactive
 viewer (data preview + export to CSV/JSONL/JSON/XLSX) when run in a
 terminal, or prints schema and statistics when output is redirected.
 
-Supports glob patterns (csv_to_parquet *.csv), compressed input (.gz, .zst),
+Supports glob patterns (convert_to_parquet *.csv), compressed input (.gz, .zst),
 and forced delimiter override (--delimiter).
 
 Spreadsheets produce one Parquet per sheet: <stem>__<sheet>.parquet
@@ -506,7 +506,7 @@ fn run_csv_conversion(
     if cli.force_utf8 {
         eprintln!("{}", warning("--force-utf8 active"));
     }
-    convert_csv_to_parquet(
+    convert_convert_to_parquet(
         input_path,
         output_path,
         cli.full_schema_inference,
@@ -566,7 +566,7 @@ fn stdin_output_path(cli: &CommandInterface) -> PathBuf {
 
 fn generate_manpage(output: Option<PathBuf>) -> Result<()> {
     let mut cmd = CommandInterface::command();
-    cmd = cmd.name("csv_to_parquet");
+    cmd = cmd.name("convert_to_parquet");
     let man = Man::new(cmd);
     match output {
         Some(path) => {
@@ -586,4 +586,3 @@ fn display_help() {
     let _ = command.print_help();
     eprintln!();
 }
-

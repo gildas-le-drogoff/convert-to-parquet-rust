@@ -13,8 +13,8 @@ Contributions are welcome! Here's how to participate in the project.
 # 1. Fork the repository
 
 # 2. Clone your fork
-git clone https://github.com/<your-username>/csv_to_parquet.git
-cd csv_to_parquet
+git clone https://github.com/<your-username>/convert_to_parquet.git
+cd convert_to_parquet
 
 # 3. Create a branch
 git checkout -b my-feature

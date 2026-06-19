@@ -1,6 +1,6 @@
 // ============================================================
-use csv_to_parquet::conversion::convert_csv_to_parquet;
-use csv_to_parquet::xlsx::{export_sheet_to_csv, list_sheet_names};
+use convert_to_parquet::conversion::convert_convert_to_parquet;
+use convert_to_parquet::xlsx::{export_sheet_to_csv, list_sheet_names};
 use parquet::file::reader::{FileReader, SerializedFileReader};
 use rust_xlsxwriter::Workbook;
 use std::fs::File;
@@ -99,7 +99,7 @@ fn roundtrip_xlsx_to_parquet_row_count_matches() {
     wb.save(&xlsx_path).unwrap();
     let export = export_sheet_to_csv(&xlsx_path, "Big").unwrap();
     let parquet_path = dir.path().join("Big.parquet");
-    convert_csv_to_parquet(&export.csv_path, &parquet_path, false, false, false, None).unwrap();
+    convert_convert_to_parquet(&export.csv_path, &parquet_path, false, false, false, None).unwrap();
     assert_eq!(count_parquet_rows(&parquet_path), rows_count);
 }
 

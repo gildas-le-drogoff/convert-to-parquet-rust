@@ -1,9 +1,9 @@
-# 🦀 csv-to-parquet
+# 🦀 convert-to-parquet
 
 [![Rust](./docs/rust.svg)](https://www.rust-lang.org/)
 [![License](./docs/license-mit-blue.svg)](LICENSE)
-[![Docs](./docs/docs-mdbook-flat.svg)](https://gildas-le-drogoff.github.io/csv_to_parquet/)
-[![GitHub](./docs/csv-to-parquet-rust-flat.svg)](https://github.com/gildas-le-drogoff/csv-to-parquet-rust)
+[![Docs](./docs/docs-mdbook-flat.svg)](https://gildas-le-drogoff.github.io/convert_to_parquet/)
+[![GitHub](./docs/convert-to-parquet-rust-flat.svg)](https://github.com/gildas-le-drogoff/convert-to-parquet-rust)
 
 Convert delimited text (CSV, TSV, PSV), spreadsheets (XLSX, ODS, XLS), JSON/JSONL/NDJSON, and Parquet files — with automatic schema inference, parallel processing, and compressed output.
 
@@ -47,7 +47,7 @@ Convert delimited text (CSV, TSV, PSV), spreadsheets (XLSX, ODS, XLS), JSON/JSON
 </table>
 
 <p align="center">
-  <img src="docs/csv-to-parquet.demo.gif" alt="Demo" width="720">
+  <img src="docs/convert-to-parquet.demo.gif" alt="Demo" width="720">
 </p>
 
 ## Architecture
@@ -80,7 +80,7 @@ Each column's type is determined by **gradual narrowing**: every sampled value r
 
 ```bash
 cargo build --release
-# binary at target/release/csv_to_parquet
+# binary at target/release/convert_to_parquet
 ```
 
 Or install system-wide:
@@ -95,52 +95,52 @@ make install PREFIX=~/.local        # user install
 ### Basic conversion
 
 ```bash
-csv_to_parquet file.csv             # → file.parquet
-csv_to_parquet data.csv -o out/     # → out/data.parquet
-csv_to_parquet *.csv                # batch / glob
+convert_to_parquet file.csv             # → file.parquet
+convert_to_parquet data.csv -o out/     # → out/data.parquet
+convert_to_parquet *.csv                # batch / glob
 ```
 
 ### Compressed input
 
 ```bash
-csv_to_parquet logs.csv.gz          # auto-decompress gzip
-csv_to_parquet data.csv.zst         # auto-decompress zstd
-bzcat data.csv.bz2 | csv_to_parquet -   # bzip2 via stdin
+convert_to_parquet logs.csv.gz          # auto-decompress gzip
+convert_to_parquet data.csv.zst         # auto-decompress zstd
+bzcat data.csv.bz2 | convert_to_parquet -   # bzip2 via stdin
 ```
 
 ### Spreadsheets & JSON
 
 ```bash
-csv_to_parquet data.xlsx            # → data__Sheet1.parquet, …
-csv_to_parquet records.json         # → records.parquet
-csv_to_parquet logs.jsonl           # → logs.parquet
+convert_to_parquet data.xlsx            # → data__Sheet1.parquet, …
+convert_to_parquet records.json         # → records.parquet
+convert_to_parquet logs.jsonl           # → logs.parquet
 ```
 
 ### Delimiter override
 
 ```bash
-csv_to_parquet file.pipe -d '|'
-csv_to_parquet file.tsv -d '\t'     # skip auto-detect
+convert_to_parquet file.pipe -d '|'
+convert_to_parquet file.tsv -d '\t'     # skip auto-detect
 ```
 
 ### Inverse: Parquet → CSV / JSONL
 
 ```bash
-csv_to_parquet --to-csv data.parquet -o data.csv
-csv_to_parquet --to-jsonl data.parquet -o data.jsonl
-csv_to_parquet --to-csv *.parquet --output csv_out/
+convert_to_parquet --to-csv data.parquet -o data.csv
+convert_to_parquet --to-jsonl data.parquet -o data.jsonl
+convert_to_parquet --to-csv *.parquet --output csv_out/
 ```
 
 ### Inspect schema
 
 ```bash
-csv_to_parquet --view-schema data.parquet
+convert_to_parquet --view-schema data.parquet
 ```
 
 ### Full-schema inference
 
 ```bash
-csv_to_parquet --full-schema-inference large_file.csv
+convert_to_parquet --full-schema-inference large_file.csv
 ```
 
 Scans the entire file instead of the first 10,000 rows. Slower but catches type changes deeper in the data.
@@ -148,7 +148,7 @@ Scans the entire file instead of the first 10,000 rows. Slower but catches type 
 ### Force all-text
 
 ```bash
-csv_to_parquet --force-utf8 messy_data.csv
+convert_to_parquet --force-utf8 messy_data.csv
 ```
 
 Disables all type inference. Every column is `LargeUtf8`. Guarantees no data loss.
@@ -156,9 +156,9 @@ Disables all type inference. Every column is `LargeUtf8`. Guarantees no data los
 ### Shell
 
 ```bash
-cat file.csv | csv_to_parquet -     # → stdin.parquet
-csv_to_parquet --man > csv_to_parquet.1
-man ./csv_to_parquet.1
+cat file.csv | convert_to_parquet -     # → stdin.parquet
+convert_to_parquet --man > convert_to_parquet.1
+man ./convert_to_parquet.1
 ```
 
 ### Full options
@@ -205,14 +205,14 @@ The `err %` column shows the proportion of non-null values that failed conversio
 
 ```bash
 cargo test                     # Rust test suite
-python3 test_csv_to_parquet.py # Integration tests (requires pyarrow)
+python3 test_convert_to_parquet.py # Integration tests (requires pyarrow)
 ```
 
 ## Known limitations
 
 - **Strict inference**: a single non-conforming value escalates the entire column to `LargeUtf8`.
 - **Header heuristics**: possible false positive when the first data row is short, unique, and alphabetic.
-- **bzip2 / xz**: not supported directly. Use stdin: `bzcat file.bz2 | csv_to_parquet -`.
+- **bzip2 / xz**: not supported directly. Use stdin: `bzcat file.bz2 | convert_to_parquet -`.
 
 ## Dependencies
 

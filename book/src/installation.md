@@ -9,14 +9,14 @@
 
 ```bash
 # Clone the repository
-git clone https://github.com/gildas-le-drogoff/csv_to_parquet.git
-cd csv_to_parquet
+git clone https://github.com/gildas-le-drogoff/convert_to_parquet.git
+cd convert_to_parquet
 
 # Build in release mode
 cargo build --release
 ```
 
-The binary is located in `target/release/csv_to_parquet`.
+The binary is located in `target/release/convert_to_parquet`.
 
 ## System Installation
 
@@ -35,11 +35,11 @@ make install PREFIX=~/.local
 
 ```bash
 # Display version
-./target/release/csv_to_parquet --version
+./target/release/convert_to_parquet --version
 
 # Display help
-./target/release/csv_to_parquet --help
+./target/release/convert_to_parquet --help
 
 # Generate man page
-./target/release/csv_to_parquet --man | man -l -
+./target/release/convert_to_parquet --man | man -l -
 ```
