@@ -63,16 +63,6 @@ jobs:
         run: |
           ./target/${{ matrix.target }}/release/convert_to_parquet --man > convert_to_parquet.1
 
-      - name: Install UPX
-        uses: taiki-e/install-action@v2
-        with:
-          tool: upx
-
-      - name: Compress binaries with UPX
-        run: |
-          upx --best --lzma target/${{ matrix.target }}/release/convert_to_parquet${{ matrix.ext }}
-          upx --best --lzma target/${{ matrix.target }}/release/csv_generator${{ matrix.ext }}
-
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -152,7 +142,6 @@ jobs:
             | macOS    | x86_64      | `convert_to_parquet-x86_64-apple-darwin` |
             | Windows  | x86_64      | `convert_to_parquet-x86_64-pc-windows-msvc.exe` |
 
-            All binaries are compressed with UPX (LZMA).
           allowUpdates: true
           replacesArtifacts: true
           artifacts: "release-assets/*"
